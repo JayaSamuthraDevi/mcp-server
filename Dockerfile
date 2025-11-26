@@ -1,47 +1,37 @@
 # -----------------------------
 # 1. Builder Stage
 # -----------------------------
-    FROM ghcr.io/astral-sh/uv:python3.14-bookworm AS builder
+    FROM ghcr.io/astral-sh/uv:python3.12-bookworm AS builder
 
     WORKDIR /app
     
-    # Copy project metadata
-    COPY pyproject.toml uv.lock ./
-    
-    # Install dependencies into .venv (prod only)
-    RUN uv sync --frozen --no-dev
-    
-    # Copy project source last (better layer caching)
+    # Copy project files
     COPY . .
+    
+    # Install dependencies into a folder
+    RUN uv pip install --no-cache --target=/install fastmcp
+    RUN uv pip install --no-cache --target=/install -r requirements.txt || true
+    
     
     # -----------------------------
     # 2. Runtime Stage
     # -----------------------------
-    FROM python:3.14-slim-bookworm AS runtime
-    
-    # No .pyc files + unbuffered logs
-    ENV PYTHONDONTWRITEBYTECODE=1 \
-        PYTHONUNBUFFERED=1 \
-        PATH="/opt/venv/bin:${PATH}"
-    
-    # Create non-root user
-    RUN groupadd --system appuser && \
-        useradd --system --gid appuser appuser
+    FROM python:3.12-slim
     
     WORKDIR /app
     
-    # Copy venv
-    COPY --from=builder /app/.venv /opt/venv
+    # Copy installed Python dependencies
+    COPY --from=builder /install /usr/local/lib/python3.12/site-packages/
     
-    # Copy actual application source
+    # Copy project code
     COPY . .
     
-    RUN chown -R appuser:appuser /app
+    # Environment variables
+    ENV PYTHONUNBUFFERED=1
     
-    USER appuser
-    
+    # Expose FastMCP port
     EXPOSE 8000
     
-    # Use uv run instead of python (2025 best practice)
-    CMD ["uv", "run", "--no-sync", "app/main.py"]
+    # CMD using uv inside runtime
+    CMD ["uv", "run", "python", "app/main.py"]
     
