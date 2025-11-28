@@ -1,6 +1,6 @@
 from fastmcp import FastMCP
-from mcp_server_stdio.middleware.Authentication_middleware import AuthMiddleware
-from mcp_server_stdio.tools.loader import load_tools
+from middleware.Authentication_middleware import AuthMiddleware
+from tools.loader import load_tools
 
 
 def run():

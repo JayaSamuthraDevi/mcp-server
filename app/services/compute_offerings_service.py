@@ -10,14 +10,14 @@ from __future__ import annotations
 from typing import Any
 
 from fastmcp import Context
-from mcp_server_stdio.core.constants import (
+from core.constants import (
     API_COMPUTE_OFFERINGS_PATH,
     API_VPN_USER_COST_PATH,
     COMPUTE_OFFERING_TYPE_PAY_AS_YOU_GO,
     DEFAULT_LANGUAGE,
 )
-from mcp_server_stdio.helpers.credentials import CredentialsService
-from mcp_server_stdio.helpers.http_client import get_json
+from helpers.credentials import CredentialsService
+from helpers.http_client import get_json
 
 
 class ComputeService:
