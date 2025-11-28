@@ -1,9 +1,25 @@
-from fastmcp.server.middleware import Middleware, MiddlewareContext
+"""Authentication middleware for FastMCP requests.
+
+This middleware extracts credentials from incoming request headers and makes
+them available to tools via Context state.
+"""
+
+from __future__ import annotations
+
 from fastmcp.server.dependencies import get_http_headers
+from fastmcp.server.middleware import Middleware, MiddlewareContext
+
+from core.constants import (
+    MCP_EXEMPT_METHODS,
+    STATE_KEY_API_KEY,
+    STATE_KEY_BASE_URL,
+    STATE_KEY_SECRET_KEY,
+    STATE_KEY_ZONE_UUID,
+)
+
 
 class AuthMiddleware(Middleware):
-    """
-    Authentication middleware following FastMCP best practices.
+    """Authentication middleware following FastMCP best practices.
 
     Extracts credentials from incoming request headers and makes them
     available to tools via Context state. No validation - just passes
@@ -13,16 +29,7 @@ class AuthMiddleware(Middleware):
     """
 
     # Methods that don't require authentication (MCP protocol methods)
-    EXEMPT_METHODS = {
-        "initialize",
-        "initialized",
-        "ping",
-        "notifications/cancelled",
-        "tools/list",
-        "resources/list",
-        "prompts/list",
-        "completion/complete"
-    }
+    EXEMPT_METHODS = MCP_EXEMPT_METHODS
 
     async def on_request(self, context: MiddlewareContext, call_next):
         print("\n" + "=" * 60)
@@ -73,13 +80,16 @@ class AuthMiddleware(Middleware):
         # Store credentials from request in context state for tools to use
         # Tools will use these credentials when making API calls
         ctx = context.fastmcp_context
-        ctx.set_state("api_key", api_key)
-        ctx.set_state("secret_key", secret_key)
-        ctx.set_state("base_url", base_url)
-        ctx.set_state("zone_uuid", zone_uuid)
+        ctx.set_state(STATE_KEY_API_KEY, api_key)
+        ctx.set_state(STATE_KEY_SECRET_KEY, secret_key)
+        ctx.set_state(STATE_KEY_BASE_URL, base_url)
+        ctx.set_state(STATE_KEY_ZONE_UUID, zone_uuid)
 
         print("[AUTH] ✓ SUCCESS: Credentials extracted from request")
         print("[AUTH] Credentials stored in context state for tools")
         print("=" * 60 + "\n")
 
         return await call_next(context)
+
+
+__all__ = ["AuthMiddleware"]

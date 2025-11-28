@@ -1,64 +1,75 @@
-from fastmcp import Context
-from services.compute_offerings_service import ComputeService
-from exceptions.exception_handler import wrap_tool_exceptions
+"""MCP tools for compute offerings and VPN cost operations.
 
+This module registers FastMCP tools that expose compute offerings and VPN
+cost functionality to LLM clients.
+"""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+
+from fastmcp import Context
+from core.constants import DEFAULT_LANGUAGE
+from exceptions.exception_handler import wrap_tool_exceptions
+from services.compute_offerings_service import ComputeService
+
+if TYPE_CHECKING:
+    from fastmcp import FastMCP
+
+# Service instance
 service = ComputeService()
 
-def register(mcp):
+
+def register(mcp: FastMCP) -> None:
+    """Register compute offerings tools with FastMCP.
+
+    Args:
+        mcp: FastMCP instance to register tools with
+    """
 
     @mcp.tool()
     @wrap_tool_exceptions("Failed to fetch compute offerings")
     async def get_compute_offerings(
         context: Context,
-        lang: str = "en"
-    ) -> dict:
-        """
-        Fetch compute offerings from Stackbill API.
+        lang: str = DEFAULT_LANGUAGE,
+    ) -> dict[str, Any]:
+        """Fetch compute offerings from Stackbill API.
+
         Credentials are automatically loaded from mcp.json via authentication middleware.
+
+        Args:
+            context: FastMCP context containing credentials
+            lang: Language code for response (default: 'en')
+
+        Returns:
+            Dictionary containing status, zone_id, and compute offerings data
         """
-
-        # Get credentials from context state (set by AuthMiddleware using set_state)
-        base_url = context.get_state("base_url")
-        zone_uuid = context.get_state("zone_uuid")
-        api_key = context.get_state("api_key")
-        secret_key = context.get_state("secret_key")
-
-        headers = {
-            "apikey": api_key,
-            "secretkey": secret_key
-        }
-
-        data = await service.get_compute_offerings(base_url, zone_uuid, lang, headers)
+        data = await service.get_compute_offerings(context, lang)
 
         return {
             "status": "success",
-            "zone_id": zone_uuid,
-            "data": data
+            "data": data,
         }
 
     @mcp.tool()
     @wrap_tool_exceptions("Failed to fetch VPN user cost")
-    async def get_vpn_user_cost(
-        context: Context
-    ) -> dict:
-        """
-        Fetch VPN user cost from Stackbill API.
+    async def get_vpn_user_cost(context: Context) -> dict[str, Any]:
+        """Fetch VPN user cost from Stackbill API.
+
         Credentials are automatically loaded from mcp.json via authentication middleware.
+
+        Args:
+            context: FastMCP context containing credentials
+
+        Returns:
+            Dictionary containing status and VPN user cost data
         """
-
-        # Get credentials from context state (set by AuthMiddleware using set_state)
-        base_url = context.get_state("base_url")
-        api_key = context.get_state("api_key")
-        secret_key = context.get_state("secret_key")
-
-        headers = {
-            "apikey": api_key,
-            "secretkey": secret_key
-        }
-
-        res = await service.get_vpn_user_cost(base_url, headers)
+        res = await service.get_vpn_user_cost(context)
 
         return {
             "status": "success",
-            **res
+            **res,
         }
+
+
+__all__ = ["register"]

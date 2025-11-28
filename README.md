@@ -20,34 +20,17 @@ Or if using pip directly:
 pip install fastmcp httpx
 ```
 
-## Running the Server
+## Running the Server (stdio transport)
 
-Start the MCP server:
+This project now runs as an MCP stdio server (MCP messages over stdin/stdout). Start the server with:
 
 ```bash
-python main.py
+python -m app.main
 ```
 
-The server will start on `http://localhost:8000` using the streamable-http transport.
+The server communicates over standard input/output and is intended to be launched by an MCP-capable client (for example, a desktop assistant or a tool runner that spawns the process and talks MCP over stdio). If you previously used `mcp-inspector` or other HTTP-based tools, note that those expect an HTTP endpoint; for stdio you should configure your MCP client to execute the command above.
 
-## Using with mcp-inspector
-
-### 1. Install mcp-inspector
-```bash
-npm install -g @modelcontextprotocol/inspector
-```
-
-### 2. Start the MCP server
-In one terminal:
-```bash
-python main.py
-```
-
-### 3. Connect with mcp-inspector
-In another terminal:
-```bash
-mcp-inspector http://localhost:8000
-```
+For Claude Desktop or a similar client that accepts a command, use the configuration example in the "Configuration" section below to point the client at this process.
 
 ### 4. Query Billing Information
 
