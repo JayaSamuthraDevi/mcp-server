@@ -1,5 +1,5 @@
 [project]
-name = "mcp-hello"
+name = "mcp-server"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -13,3 +13,5 @@ dependencies = [
     "python-json-logger>=4.0.0",
     "starlette>=0.50.0",
 ]
+[project.scripts]
+mcp-service = "app.main:run"
