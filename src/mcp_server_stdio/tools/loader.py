@@ -2,7 +2,7 @@
 import importlib
 import pkgutil
 from typing import Callable
-import tools as package
+import mcp_server_stdio.tools as package
 
 def load_tools(mcp):
     for _, module_name, _ in pkgutil.walk_packages(package.__path__, package.__name__ + "."):

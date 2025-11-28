@@ -9,9 +9,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from fastmcp import Context
-from core.constants import DEFAULT_LANGUAGE
-from exceptions.exception_handler import wrap_tool_exceptions
-from services.compute_offerings_service import ComputeService
+from mcp_server_stdio.core.constants import DEFAULT_LANGUAGE
+from mcp_server_stdio.exceptions.exception_handler import wrap_tool_exceptions
+from mcp_server_stdio.services.compute_offerings_service import ComputeService
 
 if TYPE_CHECKING:
     from fastmcp import FastMCP

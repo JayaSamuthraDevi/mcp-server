@@ -10,7 +10,7 @@ from typing import Any
 
 import httpx
 
-from helpers.logging_config import get_logger
+from mcp_server_stdio.helpers.logging_config import get_logger
 
 logger = get_logger()
 

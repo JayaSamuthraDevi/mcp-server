@@ -11,7 +11,7 @@ import sys
 
 from pythonjsonlogger import jsonlogger
 
-from core.constants import LOGGER_NAME
+from mcp_server_stdio.core.constants import LOGGER_NAME
 
 
 def setup_json_logging(level: int = logging.DEBUG) -> logging.Logger:
