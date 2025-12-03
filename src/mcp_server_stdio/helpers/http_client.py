@@ -10,6 +10,10 @@ from typing import Any
 
 import httpx
 
+from mcp_server_stdio.helpers.logging_config import get_logger
+
+logger = get_logger()
+
 # Constants
 DEFAULT_TIMEOUT = 30.0
 JSON_CONTENT_TYPE = "application/json"
@@ -49,6 +53,16 @@ async def get_json(
     Raises:
         httpx.HTTPError: If the request fails
     """
+    safe_headers = _sanitize_headers(headers)
+
+    logger.debug(
+        {
+            "event": "http_request",
+            "url": url,
+            "params": params,
+            "headers": safe_headers,
+        }
+    )
 
     try:
         async with httpx.AsyncClient(timeout=timeout) as client:
@@ -57,6 +71,14 @@ async def get_json(
                 params=params,
                 headers=headers,
             )
+
+        logger.debug(
+            {
+                "event": "http_response",
+                "status": response.status_code,
+                "url": str(response.request.url),
+            }
+        )
 
         response.raise_for_status()
 
@@ -68,6 +90,17 @@ async def get_json(
         return response.text
 
     except httpx.HTTPError as e:
+        logger.error(
+            {
+                "event": "http_error",
+                "url": url,
+                "params": params,
+                "headers": safe_headers,
+                "error": str(e),
+                "status_code": getattr(e.response, "status_code", None),
+                "response_text": getattr(e.response, "text", None),
+            }
+        )
         raise
 
 
