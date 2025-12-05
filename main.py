@@ -8,17 +8,17 @@ logging.basicConfig(level=logging.INFO)
 
 # Initialize OAuth Proxy
 auth = OAuthProxy(
-    upstream_authorization_endpoint="http://localhost:8080/realms/myrealm/protocol/openid-connect/auth",
-    upstream_token_endpoint="http://localhost:8080/realms/myrealm/protocol/openid-connect/token",
+    upstream_authorization_endpoint="http://0.0.0.0:8080/realms/myrealm/protocol/openid-connect/auth",
+    upstream_token_endpoint="http://0.0.0.0:8080/realms/myrealm/protocol/openid-connect/token",
     upstream_client_id="mcp-server-client",
-    upstream_client_secret="redacted",
+    upstream_client_secret="OSzp9MRyWMMvXfLV8WSnuwFABk5kenwj",
     token_verifier=JWTVerifier(
-        jwks_uri="http://localhost:8080/realms/myrealm/protocol/openid-connect/certs",
-        issuer="http://localhost:8080/realms/myrealm",
+        jwks_uri="http://0.0.0.0:8080/realms/myrealm/protocol/openid-connect/certs",
+        issuer="http://0.0.0.0:8080/realms/myrealm",
         audience="account",
         required_scopes=[],
     ),
-    base_url="http://localhost:8000",
+    base_url="https://charming-lime-spoonbill.fastmcp.app",
 )
 
 mcp = FastMCP(name="My Protected Server", auth=auth)
@@ -28,11 +28,12 @@ def hello(context: Context) -> str:
     """Greet the authenticated user - similar to Gmail's approach"""
     token = get_access_token()  # returns TokenData
     claims = token.claims       # decoded JWT payload
-    print(token)
+    logging.info(f"User claims: {claims}")
+    logging.info(f"Token: {token}")
     user_email = claims.get("email")
     user_name = claims.get("name")
 
-    return f"Hello {user_name}! Email: {user_email}"
+    return f"Hello {user_name}! Email: {user_email}, Token: {token}"
 
 mcp_http_app = mcp.http_app()
 
