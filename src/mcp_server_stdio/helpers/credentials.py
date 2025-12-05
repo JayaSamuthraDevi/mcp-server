@@ -31,4 +31,3 @@ class CredentialsService:
     @staticmethod
     def from_context(context: Context) -> Credentials:
         return getattr(context, "credentials", CredentialsService.from_env())
-
