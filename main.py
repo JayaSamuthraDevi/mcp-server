@@ -22,7 +22,22 @@ auth = OAuthProxy(
     base_url="https://charming-lime-spoonbill.fastmcp.app",
 )
 
-mcp = FastMCP(name="My Protected Server", auth=auth)
+middleware = [
+    Middleware(
+        CORSMiddleware,
+        allow_origins=["*"],  # Allow all origins; use specific origins for security
+        allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
+        allow_headers=[
+            "mcp-protocol-version",
+            "mcp-session-id",
+            "Authorization",
+            "Content-Type",
+        ],
+        expose_headers=["mcp-session-id"],
+    )
+]
+
+mcp = FastMCP(name="My Protected Server", auth=auth, middleware=middleware)
 
 @mcp.tool()
 def hello(context: Context) -> str:
@@ -37,17 +52,6 @@ def hello(context: Context) -> str:
     return f"Hello {user_name}! Email: {user_email}, Token: {token}"
 
 mcp_http_app = mcp.http_app()
-
-# Add CORS middleware
-mcp_http_app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "*",  # For testing only - remove in production!
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 if __name__ == "__main__":
     import uvicorn
