@@ -8,17 +8,17 @@ logging.basicConfig(level=logging.INFO)
 
 # Initialize OAuth Proxy
 auth = OAuthProxy(
-    upstream_authorization_endpoint="http://0.0.0.0:8080/realms/myrealm/protocol/openid-connect/auth",
-    upstream_token_endpoint="http://0.0.0.0:8080/realms/myrealm/protocol/openid-connect/token",
+    upstream_authorization_endpoint="http://localhost:8080/realms/myrealm/protocol/openid-connect/auth",
+    upstream_token_endpoint="http://localhost:8080/realms/myrealm/protocol/openid-connect/token",
     upstream_client_id="mcp-server-client",
-    upstream_client_secret="OSzp9MRyWMMvXfLV8WSnuwFABk5kenwj",
+    upstream_client_secret="LfVapq5dr4iGbnAcmnqoHH40z75KifeV",
     token_verifier=JWTVerifier(
-        jwks_uri="http://0.0.0.0:8080/realms/myrealm/protocol/openid-connect/certs",
-        issuer="http://0.0.0.0:8080/realms/myrealm",
+        jwks_uri="http://localhost:8080/realms/myrealm/protocol/openid-connect/certs",
+        issuer="http://localhost:8080/realms/myrealm",
         audience="account",
         required_scopes=[],
     ),
-    base_url="https://charming-lime-spoonbill.fastmcp.app",
+    base_url="http://localhost:8000"  # The base URL where this MCP server is hosted,
 )
 
 mcp = FastMCP(name="My Protected Server", auth=auth)
