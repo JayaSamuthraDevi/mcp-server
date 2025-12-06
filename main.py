@@ -3,6 +3,7 @@ from fastmcp import FastMCP, Context
 from fastmcp.server.auth.oauth_proxy import OAuthProxy
 from fastmcp.server.auth.providers.jwt import JWTVerifier
 from fastmcp.server.dependencies import get_access_token
+from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 
 logging.basicConfig(level=logging.INFO)
