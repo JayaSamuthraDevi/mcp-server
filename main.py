@@ -3,6 +3,7 @@ from fastmcp import FastMCP, Context
 from fastmcp.server.auth.oauth_proxy import OAuthProxy
 from fastmcp.server.auth.providers.jwt import JWTVerifier
 from fastmcp.server.dependencies import get_access_token
+from starlette.middleware.cors import CORSMiddleware
 
 logging.basicConfig(level=logging.INFO)
 
@@ -36,6 +37,17 @@ def hello(context: Context) -> str:
     return f"Hello {user_name}! Email: {user_email}, Token: {token}"
 
 mcp_http_app = mcp.http_app()
+
+# Add CORS middleware
+mcp_http_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "*",  # For testing only - remove in production!
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 if __name__ == "__main__":
     import uvicorn
