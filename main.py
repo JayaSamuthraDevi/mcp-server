@@ -6,7 +6,7 @@ from fastmcp.server.dependencies import get_access_token
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.Debug)
 
 # Initialize OAuth Proxy
 auth = OAuthProxy(
