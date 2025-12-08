@@ -20,14 +20,13 @@ auth = OAuthProxy(
         audience="mcp-server-client",
         required_scopes=[],
     ),
-    base_url="https://charming-lime-spoonbill.fastmcp.app",
+    base_url="https://breezy-tomato-rodent.fastmcp.app",
 )
 
 middleware = [
     Middleware(
         CORSMiddleware,
-        allow_origins=[ "http://localhost:6274","http://localhost:8000",
-            "https://charming-lime-spoonbill.fastmcp.app","*"],  # Allow all origins; use specific origins for security
+        allow_origins=["*"],  # Allow all origins; use specific origins for security
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],  # allow all headers
