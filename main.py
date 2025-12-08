@@ -19,7 +19,6 @@ auth = OAuthProxy(
         issuer="https://keycloak.elasticspace.io:8443/realms/myrealm",
         audience="mcp-server-client",
         required_scopes=[],
-        timeout=30,
     ),
     base_url="http://localhost:8000",
 )
