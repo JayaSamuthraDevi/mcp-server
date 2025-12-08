@@ -19,14 +19,15 @@ auth = OAuthProxy(
         issuer="https://keycloak.elasticspace.io:8443/realms/myrealm",
         audience="mcp-server-client",
         required_scopes=[],
+        timeout=30,
     ),
-    base_url="http://localhost:8080",
+    base_url="http://localhost:8000",
 )
 
 middleware = [
     Middleware(
         CORSMiddleware,
-        allow_origins=[ "http://localhost:6274","http://localhost:8080",
+        allow_origins=[ "http://localhost:6274","http://localhost:8000",
             "https://charming-lime-spoonbill.fastmcp.app","*"],  # Allow all origins; use specific origins for security
         allow_credentials=True,
         allow_methods=["*"],
@@ -53,4 +54,4 @@ mcp_http_app = mcp.http_app()
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:mcp_http_app", host="0.0.0.0", port=8080)
+    uvicorn.run("main:mcp_http_app", host="0.0.0.0", port=8000)
