@@ -27,7 +27,7 @@ middleware = [
     Middleware(
         CORSMiddleware,
         allow_origins=[ "http://localhost:6274",
-            "https://charming-lime-spoonbill.fastmcp.app"],  # Allow all origins; use specific origins for security
+            "https://charming-lime-spoonbill.fastmcp.app","*"],  # Allow all origins; use specific origins for security
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],  # allow all headers
