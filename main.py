@@ -20,7 +20,7 @@ auth = OAuthProxy(
         audience="mcp-server-client",
         required_scopes=[],
     ),
-    base_url="http://localhost:8000",
+    base_url="https://charming-lime-spoonbill.fastmcp.app",
 )
 
 middleware = [
