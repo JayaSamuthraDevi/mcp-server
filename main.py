@@ -17,16 +17,16 @@ auth = OAuthProxy(
     token_verifier=JWTVerifier(
         jwks_uri="https://keycloak.elasticspace.io:8443/realms/myrealm/protocol/openid-connect/certs",
         issuer="https://keycloak.elasticspace.io:8443/realms/myrealm",
-        audience="account",
+        audience="mcp-server-client",
         required_scopes=[],
     ),
-    base_url="https://charming-lime-spoonbill.fastmcp.app",
+    base_url="http://localhost:8080",
 )
 
 middleware = [
     Middleware(
         CORSMiddleware,
-        allow_origins=[ "http://localhost:6274",
+        allow_origins=[ "http://localhost:6274","http://localhost:8080",
             "https://charming-lime-spoonbill.fastmcp.app","*"],  # Allow all origins; use specific origins for security
         allow_credentials=True,
         allow_methods=["*"],
