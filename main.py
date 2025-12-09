@@ -3,8 +3,10 @@ from fastmcp import FastMCP, Context
 from fastmcp.server.auth.oauth_proxy import OAuthProxy
 from fastmcp.server.auth.providers.jwt import JWTVerifier
 from fastmcp.server.dependencies import get_access_token
+from starlette.middleware import Middleware
+from starlette.middleware.cors import CORSMiddleware
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 # Initialize OAuth Proxy
 auth = OAuthProxy(
@@ -21,7 +23,18 @@ auth = OAuthProxy(
     base_url="https://breezy-tomato-rodent.fastmcp.app",
 )
 
-mcp = FastMCP(name="My Protected Server", auth=auth)
+middleware = [
+    Middleware(
+        CORSMiddleware,
+        allow_origins=["*"],  # Allow all origins; use specific origins for security
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],  # allow all headers
+        expose_headers=["*"]
+    )
+]
+
+mcp = FastMCP(name="My Protected Server", auth=auth, middleware=middleware)
 
 @mcp.tool()
 def hello(context: Context) -> str:
