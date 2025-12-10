@@ -10,6 +10,7 @@ from typing import Any
 
 import httpx
 
+from helpers.credentials import Credentials
 from helpers.logging_config import get_logger
 
 logger = get_logger()
@@ -36,7 +37,6 @@ def _sanitize_headers(headers: dict[str, str] | None) -> dict[str, str]:
 async def get_json(
     url: str,
     params: dict[str, Any] | None = None,
-    headers: dict[str, str] | None = None,
     timeout: float = DEFAULT_TIMEOUT,
 ) -> dict[str, Any] | str:
     """Make a GET request and return JSON or text response.
@@ -53,6 +53,8 @@ async def get_json(
     Raises:
         httpx.HTTPError: If the request fails
     """
+    credentials = Credentials.load()
+    headers = credentials.to_headers()
     safe_headers = _sanitize_headers(headers)
 
     logger.debug(

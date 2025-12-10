@@ -2,11 +2,18 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
+class Config:
+    UPSTREAM_AUTHORIZATION_ENDPOINT = os.getenv("UPSTREAM_AUTHORIZATION_ENDPOINT")
+    UPSTREAM_TOKEN_ENDPOINT = os.getenv("UPSTREAM_TOKEN_ENDPOINT")
+    UPSTREAM_CLIENT_ID = os.getenv("UPSTREAM_CLIENT_ID")
+    UPSTREAM_CLIENT_SECRET = os.getenv("UPSTREAM_CLIENT_SECRET")
+    JWKS_URI = os.getenv("JWKS_URI")
+    AUDIENCE = os.getenv("AUDIENCE")
+    ISSUER = os.getenv("ISSUER")
+    MCP_SERVER_BASE_URL = os.getenv("MCP_SERVER_BASE_URL")
 
-STACKBILL_API_KEY = os.getenv("STACKBILL_API_KEY")
-STACKBILL_SECRET_KEY = os.getenv("STACKBILL_SECRET_KEY")
-STACKBILL_BASE_URL = os.getenv("STACKBILL_BASE_URL")
-STACKBILL_ZONEUUID = os.getenv("STACKBILL_ZONEUUID")
-
-if not STACKBILL_API_KEY or not STACKBILL_SECRET_KEY:
-    raise RuntimeError("Stackbill API credentials missing in environment variables")
+    if not UPSTREAM_AUTHORIZATION_ENDPOINT:
+        raise RuntimeError("Upstream authorization endpoint missing in environment variables")
+    if not MCP_SERVER_BASE_URL:
+        raise RuntimeError("MCP server base URL missing in environment variables")
+config = Config()

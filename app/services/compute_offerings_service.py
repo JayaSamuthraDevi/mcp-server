@@ -9,14 +9,13 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastmcp import Context
 from core.constants import (
     API_COMPUTE_OFFERINGS_PATH,
     API_VPN_USER_COST_PATH,
     COMPUTE_OFFERING_TYPE_PAY_AS_YOU_GO,
     DEFAULT_LANGUAGE,
 )
-from helpers.credentials import CredentialsService
+from helpers.credentials import Credentials
 from helpers.http_client import get_json
 
 
@@ -29,7 +28,6 @@ class ComputeService:
 
     async def get_compute_offerings(
         self,
-        context: Context,
         lang: str = DEFAULT_LANGUAGE,
     ) -> dict[str, Any]:
         """Fetch compute offerings from Stackbill API.
@@ -45,8 +43,7 @@ class ComputeService:
             httpx.HTTPError: If the API request fails
             ValueError: If zone_uuid is not provided in credentials
         """
-        credentials = CredentialsService.from_context(context)
-
+        credentials = Credentials.load()
         if not credentials.zone_uuid:
             raise ValueError("zone_uuid is required for compute offerings")
 
@@ -57,11 +54,10 @@ class ComputeService:
             "lang": lang,
         }
 
-        return await get_json(url, params, credentials.to_headers())
+        return await get_json(url, params)
 
     async def get_vpn_user_cost(
         self,
-        context: Context,
     ) -> dict[str, Any]:
         """Fetch VPN user cost from Stackbill API.
 
@@ -74,10 +70,9 @@ class ComputeService:
         Raises:
             httpx.HTTPError: If the API request fails
         """
-        credentials = CredentialsService.from_context(context)
-
+        credentials = Credentials.load()
         url = f"{credentials.base_url}{API_VPN_USER_COST_PATH}"
-        data = await get_json(url, headers=credentials.to_headers())
+        data = await get_json(url)
         return {"data": data}
 
 

@@ -44,7 +44,7 @@ def register(mcp: FastMCP) -> None:
         Returns:
             Dictionary containing status, zone_id, and compute offerings data
         """
-        data = await service.get_compute_offerings(context, lang)
+        data = await service.get_compute_offerings(lang)
 
         return {
             "status": "success",
@@ -64,7 +64,7 @@ def register(mcp: FastMCP) -> None:
         Returns:
             Dictionary containing status and VPN user cost data
         """
-        res = await service.get_vpn_user_cost(context)
+        res = await service.get_vpn_user_cost()
 
         return {
             "status": "success",
