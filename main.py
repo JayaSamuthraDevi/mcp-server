@@ -8,17 +8,17 @@ logging.basicConfig(level=logging.INFO)
 
 # Initialize OAuth Proxy
 auth = OAuthProxy(
-    upstream_authorization_endpoint="http://localhost:8080/realms/myrealm/protocol/openid-connect/auth",
-    upstream_token_endpoint="http://localhost:8080/realms/myrealm/protocol/openid-connect/token",
+    upstream_authorization_endpoint="https://keycloak.elasticspace.io:8443/realms/myrealm/protocol/openid-connect/auth",
+    upstream_token_endpoint="https://keycloak.elasticspace.io:8443/realms/myrealm/protocol/openid-connect/token",
     upstream_client_id="mcp-server-client",
-    upstream_client_secret="PDC2bcOqCP9VgldQsmejRU9RH9fN0t27",
+    upstream_client_secret="5S2FTeU8EuuTVMNUPJ9OBq1QRQX6piSu",
     token_verifier=JWTVerifier(
-        jwks_uri="http://localhost:8080/realms/myrealm/protocol/openid-connect/certs",
-        issuer="http://localhost:8080/realms/myrealm",
-        audience="account",
+        jwks_uri="https://keycloak.elasticspace.io:8443/realms/myrealm/protocol/openid-connect/certs",
+        issuer="https://keycloak.elasticspace.io:8443/realms/myrealm",
+        audience="mcp-server-client",
         required_scopes=[],
     ),
-    base_url="http://localhost:8000"  # The base URL where this MCP server is hosted,
+    base_url="https://breezy-tomato-rodent.fastmcp.app",
 )
 
 mcp = FastMCP(name="My Protected Server", auth=auth)
