@@ -1,40 +1,11 @@
 import logging
+from typing import Any
 from fastmcp import FastMCP, Context
-from fastmcp.server.auth.oauth_proxy import OAuthProxy
-from fastmcp.server.auth.providers.jwt import JWTVerifier
 from fastmcp.server.dependencies import get_access_token
-from starlette.middleware import Middleware
-from starlette.middleware.cors import CORSMiddleware
+import httpx
+from core.keycloak import keycloak_auth
 
-logging.basicConfig(level=logging.DEBUG)
-
-# Initialize OAuth Proxy
-auth = OAuthProxy(
-    upstream_authorization_endpoint="https://keycloak.elasticspace.io:8443/realms/myrealm/protocol/openid-connect/auth",
-    upstream_token_endpoint="https://keycloak.elasticspace.io:8443/realms/myrealm/protocol/openid-connect/token",
-    upstream_client_id="mcp-server-client",
-    upstream_client_secret="nTnSfGoO0Z8WnH32Gxw1nsUpzGnPYCtn",
-    token_verifier=JWTVerifier(
-        jwks_uri="https://keycloak.elasticspace.io:8443/realms/myrealm/protocol/openid-connect/certs",
-        issuer="https://keycloak.elasticspace.io:8443/realms/myrealm",
-        audience="mcp-server-client",
-        required_scopes=[],
-    ),
-    base_url="https://breezy-tomato-rodent.fastmcp.app",
-)
-
-middleware = [
-    Middleware(
-        CORSMiddleware,
-        allow_origins=["*"],  # Allow all origins; use specific origins for security
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],  # allow all headers
-        expose_headers=["*"]
-    )
-]
-
-mcp = FastMCP(name="My Protected Server", auth=auth, middleware=middleware)
+mcp = FastMCP(name="My Protected Server",   auth = keycloak_auth)
 
 @mcp.tool()
 def hello(context: Context) -> str:
@@ -46,7 +17,75 @@ def hello(context: Context) -> str:
     user_email = claims.get("email")
     user_name = claims.get("name")
 
-    return f"Hello {user_name}! Email: {user_email}, Token: {token}"
+    return f"Hello {user_name}! Email: {user_email}"
+
+@mcp.tool()
+async def get_compute_offerings(context: Context,lang:str ='en') -> dict[str, Any]:
+    """Get compute offerings for the authenticated user"""
+    token = get_access_token()  # returns TokenData
+    claims = token.claims       # decoded JWT payload
+    base_url = claims.get("base_url")
+    zone_uuid = claims.get("zone_uuid")
+    api_key = claims.get("api_key")
+    secret_key = claims.get("secret_key")
+    url = f"{base_url}/restapi/costestimate/compute-plan-list"
+    params = {
+            "zoneUuid": zone_uuid,
+            "computeOfferingType": "PAY_AS_YOU_GO",
+            "lang": lang,
+        }
+    headers = {
+            "apikey": api_key,
+            "secretkey": secret_key,
+        }
+    async with httpx.AsyncClient(timeout=30) as client:
+            response = await client.get(
+                url,
+                params=params,
+                headers=headers,
+            )
+    response.raise_for_status()
+
+        # Parse JSON if content-type indicates JSON
+    content_type = response.headers.get("content-type", "")
+    if content_type.startswith("application/json"):
+        return response.json()
+
+    return {
+            "status": "success",
+            "data": response.text,
+        }
+
+
+@mcp.tool()
+async def get_vpn_user_cost(context: Context) -> dict[str, Any]:
+    """Get VPN user cost for the authenticated user"""
+    token = get_access_token()  # returns TokenData
+    claims = token.claims       # decoded JWT payload
+    base_url = claims.get("base_url")
+    api_key = claims.get("api_key")
+    secret_key = claims.get("secret_key")
+    headers = {
+            "apikey": api_key,
+            "secretkey": secret_key,
+        }
+    url = f"{base_url}/restapi/costestimate/vpn-user-cost"
+    async with httpx.AsyncClient(timeout=30) as client:
+            response = await client.get(
+                url,
+                headers=headers,
+            )
+    response.raise_for_status()
+
+        # Parse JSON if content-type indicates JSON
+    content_type = response.headers.get("content-type", "")
+    if content_type.startswith("application/json"):
+        return response.json()
+
+    return {
+            "status": "success",
+            "data": response.text,
+        }
 
 mcp_http_app = mcp.http_app()
 
