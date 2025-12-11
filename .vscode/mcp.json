@@ -1,7 +1,7 @@
 {
 	"servers": {
 		"mcp-server-breezy": {
-			"url": "http://localhost:8000/mcp",
+			"url": "https://breezy-tomato-rodent.fastmcp.app/mcp",
 			"type": "http"
 		}
 	},
