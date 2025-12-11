@@ -1,16 +1,11 @@
 from fastmcp import FastMCP
 import uvicorn
-from helpers.logging_config import setup_json_logging
-from middleware.logging_middleware import LoggingMiddleware
 from tools.loader import load_tools
 from core.keycloak import keycloak_auth
 
-setup_json_logging()
-
 mcp = FastMCP(
     "mcp-service",
-    auth = keycloak_auth,
-    middleware = [LoggingMiddleware()]
+    auth = keycloak_auth
 )
 
 load_tools(mcp)
