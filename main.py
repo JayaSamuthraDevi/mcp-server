@@ -8,7 +8,7 @@ from core.keycloak import keycloak_auth
 mcp = FastMCP(name="My Protected Server",   auth = keycloak_auth)
 
 @mcp.tool()
-def hello(context: Context) -> str:
+def hello() -> str:
     """Greet the authenticated user - similar to Gmail's approach"""
     token = get_access_token()  # returns TokenData
     claims = token.claims       # decoded JWT payload
@@ -58,7 +58,7 @@ async def get_compute_offerings(context: Context,lang:str ='en') -> dict[str, An
 
 
 @mcp.tool()
-async def get_vpn_user_cost(context: Context) -> dict[str, Any]:
+async def get_vpn_user_cost() -> dict[str, Any]:
     """Get VPN user cost for the authenticated user"""
     token = get_access_token()  # returns TokenData
     claims = token.claims       # decoded JWT payload
