@@ -12,6 +12,8 @@ mcp.tool()(hello)
 mcp.tool()(get_compute_offerings)
 mcp.tool()(get_vpn_user_cost)
 
+
+
 mcp_http_app = mcp.http_app()
 
 if __name__ == "__main__":
