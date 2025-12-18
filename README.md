@@ -1,177 +1,194 @@
-# Billing Service MCP Server
+# Protected Billing MCP Server
 
-A Model Context Protocol (MCP) server that exposes billing information from your StackBill API.
+A Model Context Protocol (MCP) server that provides secure access to billing and compute information, integrated with Keycloak for OAuth2 authentication.
 
-## Setup
+## 🚀 Overview
 
-### Prerequisites
-- Python 3.14+
-- `uv` package manager (or `pip`)
+This server exposes tools to fetch compute offerings and VPN user costs. It leverages **FastMCP** for the protocol implementation and **Keycloak** to ensure only authorized users can access sensitive data.
 
-### Installation
+---
+
+## 📋 Prerequisites
+
+Before you begin, ensure you have the following installed and configured:
+
+### 1. Python 3.12+ (Recommended) or 3.14+
+The project specifies Python 3.14+, but it is compatible with Python 3.12 or higher.
+- **Check version:** `python --version`
+- **Installation:** Download from [python.org](https://www.python.org/downloads/) or use a version manager like `pyenv`.
+
+### 2. UV Package Manager
+This project uses `uv` for lightning-fast dependency management.
+- **Installation (Linux/macOS):**
+  ```bash
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  ```
+- **Installation (Windows):**
+  ```powershell
+  powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+  ```
+
+### 3. Keycloak Server
+You need a running Keycloak instance to handle authentication.
+- A **Realm** (e.g., `myrealm`).
+- A **Client** for the MCP server (e.g., `mcp-server-client`).
+- **Client Protocol**: `openid-connect`.
+- **Access Type**: `confidential` (requires a secret).
+
+---
+
+## 🛠️ Installation & Setup
+
+### 1. Clone the Repository
+```bash
+git clone <repository-url>
+cd mcp-server
+```
+
+### 2. Configure Environment Variables
+Copy the example environment file and fill in your Keycloak details:
+```bash
+cp .env.example .env
+```
+Edit `.env` and set:
+- `KEYCLOAK_DOMAIN`: Your Keycloak URL (e.g., `https://auth.example.com`)
+- `REALM_NAME`: Your realm name.
+- `MCP_SERVER_CLIENT_ID`: The client ID from Keycloak.
+- `MCP_SERVER_CLIENT_SECRET`: The client secret from Keycloak.
+- `MCP_SERVER_BASE_URL`: The public URL where your MCP server will be accessible (e.g., `http://localhost:8000`).
+
+### 3. Install Dependencies
+```bash
+uv sync
+```
+
+---
+
+## 🏃 Running the Server
+
+To start the MCP server locally:
 
 ```bash
-# Install dependencies
-uv pip install -r requirements.txt
+uv run app/main.py
 ```
+By default, the server runs on `http://0.0.0.0:8000`.
 
-Or if using pip directly:
-```bash
-pip install fastmcp httpx
-```
+---
 
-## Running the Server (stdio transport)
+## 📦 Packages Used & Rationale
 
-This project now runs as an MCP stdio server (MCP messages over stdin/stdout). Start the server with:
+| Package | Purpose | Why used? |
+| :--- | :--- | :--- |
+| **fastmcp** | Core Framework | Simplifies MCP server creation with built-in OAuth support and easy tool/resource decorators. |
+| **httpx** | HTTP Client | Modern, asynchronous HTTP client for Python, used for making requests to the upstream billing API. |
+| **python-dotenv** | Config Management | Loads environment variables from the `.env` file for secure configuration. |
+| **python-json-logger** | Structured Logging | Provides logs in JSON format, which is essential for production monitoring and debugging. |
+| **pydantic** | Data Validation | Used for defining robust data models (e.g., `TokenClaims`) and validating API responses. |
+| **uvicorn** | ASGI Server | Used in `main.py` to serve the HTTP application of FastMCP. |
 
-```bash
-python -m app.main
-```
+---
 
-The server communicates over standard input/output and is intended to be launched by an MCP-capable client (for example, a desktop assistant or a tool runner that spawns the process and talks MCP over stdio). If you previously used `mcp-inspector` or other HTTP-based tools, note that those expect an HTTP endpoint; for stdio you should configure your MCP client to execute the command above.
+## 🔧 Available Tools
 
-For Claude Desktop or a similar client that accepts a command, use the configuration example in the "Configuration" section below to point the client at this process.
+Once connected, the following tools are available to your AI assistant:
 
-### 4. Query Billing Information
+1.  **`hello`**: A simple greeting tool that demonstrates extraction of user identity (name/email) from the OAuth token.
+2.  **`get_compute_offerings`**: Fetches a list of available compute offerings (PAY_AS_YOU_GO) for the user's zone.
+3.  **`get_vpn_user_cost`**: Retrieves the cost associated with VPN users.
 
-In the mcp-inspector interface, call the `get_billing_summary` tool with your parameters:
+---
 
-**Example 1: Get current month billing**
-```json
-{
-  "domain_uuid": "4ca-d-823",
-  "zone_uuid": "e5b0-50b-ff-8e2-f2817"
-}
-```
+## 🌐 Deployment
 
-**Example 2: Get billing for specific date range**
-```json
-{
-  "domain_uuid": "4ca-d-823",
-  "zone_uuid": "e5b0-50b-ff-8e2-f2817",
-  "from_date": "03-11-2025 00:00",
-  "to_date": "20-11-2025 00:00",
-  "lang": "en"
-}
-```
+To deploy this MCP server for production:
 
-## Tool Reference
+1.  **Expose the Server**: Use a reverse proxy like **Nginx** or a tunnel like **Cloudflare Tunnel** or **ngrok** to make the server reachable via HTTPS. MCP clients (like Claude) require an HTTPS URL for remote connections.
+2.  **Dockerization**: (Optional but recommended)
+    ```dockerfile
+    FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+    COPY . /app
+    WORKDIR /app
+    RUN uv sync --frozen
+    CMD ["uv", "run", "app/main.py"]
+    ```
+3.  **Environment Variables**: Ensure all variables in `.env` are set in your production environment.
 
-### `get_billing_summary`
+---
 
-Fetch billing summary for a specified date range.
+## 🌐 Deployment
 
-**Parameters:**
-- `domain_uuid` (required): Your domain UUID (e.g., "4ca-d-823")
-- `zone_uuid` (required): Your zone UUID (e.g., "e5b0-50b-ff-8e2-f2817")
-- `from_date` (optional): Start date in format `DD-MM-YYYY HH:MM`. Defaults to 1st of current month
-- `to_date` (optional): End date in format `DD-MM-YYYY HH:MM`. Defaults to today
-- `lang` (optional): Language code (default: "en")
-- `auth_token` (optional): Bearer token or API key for authentication. Can be raw token or "Bearer <token>"
+The MCP server is currently deployed and accessible at:
+**Management URL:** [https://breezy-tomato-rodent.fastmcp.app/mcp](https://breezy-tomato-rodent.fastmcp.app/mcp)
+**HTTP Endpoint:** `https://breezy-tomato-rodent.fastmcp.app/mcp`
 
-**Returns:**
-```json
-{
-  "status": "success",
-  "data": { /* billing data from API */ },
-  "date_range": {
-    "from": "03-11-2025 00:00",
-    "to": "20-11-2025 00:00"
-  }
-}
-```
+---
 
-### `get_usage_cost_details`
+## 🔌 Connecting to AI Clients
 
-Fetch usage cost details for a specific zone.
+Since the server is deployed in the cloud, you can connect to it using the **HTTP** transport. This is the most efficient way to use the protected billing tools.
 
-**Parameters:**
-- `zone_id` (required): Zone ID (e.g., "1")
-- `lang` (optional): Language code (default: "en")
-- `auth_token` (optional): Bearer token or API key for authentication. Can be raw token or "Bearer <token>"
-
-**Returns:**
-```json
-{
-  "status": "success",
-  "data": { /* usage cost details from API */ },
-  "zone_id": "1"
-}
-```
-
-**Example in mcp-inspector:**
-```json
-{
-  "zone_id": "1",
-  "lang": "en",
-  "auth_token": "your-api-token-here"
-}
-```
-
-## How It Works
-
-1. **You ask via mcp-inspector**: "What is my billing for this month?"
-2. **mcp-inspector calls**: `get_billing_summary()` with your domain and zone UUIDs
-3. **The tool**:
-   - Sets default date range to current month if not specified
-   - Constructs the API request to: `http://demo.example.com/apidocs/api/usage/offeringusagereport/summaryreport`
-   - Passes parameters: `fromDate`, `toDate`, `domainUuid`, `zoneUuid`, `type`, `lang`
-   - Returns the billing summary response
-
-## Integration with Claude/Other AI Assistants
-
-Once this MCP server is configured in your AI assistant (Claude, etc.), you can ask questions like:
-
-- "What is my billing for this month?"
-- "Show me the usage charges from Nov 3 to Nov 20, 2025"
-- "What's my current bill for domain 4ca-d-823?"
-- "What are the usage cost details for zone 1?"
-- "Show me the cost breakdown for my zones"
-
-The assistant will automatically use this MCP tool to fetch the data.
-
-## Configuration
-
-To configure this with Claude Desktop, add to `claude_desktop_config.json`:
+### 1. Claude Desktop
+Add the following to your `claude_desktop_config.json` (typically found at `%APPDATA%\Claude\claude_desktop_config.json` on Windows or `~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
 
 ```json
 {
   "mcpServers": {
-    "billing": {
-      "command": "python",
-      "args": ["/path/to/main.py"]
+    "protected-billing": {
+      "url": "https://breezy-tomato-rodent.fastmcp.app/mcp"
     }
   }
 }
 ```
 
-## Error Handling
+### 2. Claude Code
+Run the following command to add the server:
+```bash
+claude mcp add https://breezy-tomato-rodent.fastmcp.app/mcp
+```
 
-The tool returns a structured response:
+### 3. Cursor
+1. Open **Cursor Settings** > **Features** > **MCP**.
+2. Click **+ Add New MCP Server**.
+3. Choose **HTTP**.
+4. Set Name: `Billing Server`.
+5. Set URL: `https://breezy-tomato-rodent.fastmcp.app/mcp`.
 
-- **Success**: Returns billing data with status "success"
-- **Error**: Returns error details with status "error"
+### 4. VS Code Copilot
+1. Install an MCP-compatible extension (like "MCP Client").
+2. In the extension settings, add the server URL: `https://breezy-tomato-rodent.fastmcp.app/mcp`.
 
-### 401 Unauthorized Error
+### 5. ChatGPT
+1. Use an MCP-to-ChatGPT bridge or a desktop application that supports remote MCP servers.
+2. Provide the URL: `https://breezy-tomato-rodent.fastmcp.app/mcp`.
 
-If you receive a 401 error, the API requires authentication. Use the `auth_token` parameter:
+---
+
+## 🛠️ MCP Configuration (mcp.json)
+
+For tools or environments that support an `mcp.json` configuration file, you can use the following definition:
 
 ```json
 {
-  "zone_id": "1",
-  "auth_token": "your-api-token"
+  "mcpServers": {
+    "billing-service": {
+      "type": "http",
+      "url": "https://breezy-tomato-rodent.fastmcp.app/mcp"
+    }
+  }
 }
 ```
 
-The token will be sent as a Bearer token in the Authorization header. You can provide:
-- Just the token: `"your-token"` → becomes `Authorization: Bearer your-token`
-- Or pre-formatted: `"Bearer your-token"` → sent as-is
+---
 
-## Testing
-
-You can test the endpoint directly:
+## 🔥 Testing with MCP Inspector
+You can test your server's tools without a full AI client using the MCP Inspector:
 
 ```bash
-curl "http://demo.example.com/apidocs/api/usage/offeringusagereport/summaryreport?fromDate=03-11-2025%2000:00&toDate=20-11-2025%2000:00&domainUuid=4ca-d-823&zoneUuid=e5b0-50b-ff-8e2-f2817&type=json&lang=en"
+npx @modelcontextprotocol/inspector https://breezy-tomato-rodent.fastmcp.app/mcp
 ```
+This will open a web interface where you can trigger tools and see the results.
 
+---
+
+## 🔒 Security Note
+This server is protected by OAuth2. Ensure your `MCP_SERVER_CLIENT_SECRET` is never committed to version control and that the server is served over HTTPS in production.
