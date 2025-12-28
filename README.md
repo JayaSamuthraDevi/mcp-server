@@ -119,7 +119,7 @@ To deploy this MCP server for production:
 
 The MCP server is currently deployed and accessible at:
 **Management URL:** [https://breezy-tomato-rodent.fastmcp.app/mcp](https://breezy-tomato-rodent.fastmcp.app/mcp)
-**HTTP Endpoint:** `https://breezy-tomato-rodent.fastmcp.app/mcp`
+**HTTP Endpoint:** `http://localhost:8080/mcp`
 
 ---
 
